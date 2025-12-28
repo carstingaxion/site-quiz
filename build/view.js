@@ -1,1 +1,246 @@
-!function(){"use strict";const t={bronze:{emoji:"🥉",title:"Bronze Scholar",message:"Good effort! Keep learning!"},silver:{emoji:"🥈",title:"Silver Expert",message:"Great job! You know your stuff!"},gold:{emoji:"🥇",title:"Gold Master",message:"Perfect score! You're amazing!"}};function e(){document.querySelectorAll(".wp-block-telex-block-site-quiz").forEach(t=>{new s(t).init()})}class s{constructor(t){this.element=t,this.container=t.querySelector(".site-quiz__container"),this.questionCount=parseInt(t.dataset.questionCount)||5,this.enabledPatterns=JSON.parse(t.dataset.enabledPatterns||"[]"),this.state={questions:[],currentQuestion:0,userAnswers:[],score:0,completed:!1}}async init(){const t=this.loadState();t&&!t.completed?(this.state=t,this.render()):await this.loadQuestions()}async loadQuestions(){try{const t=await fetch("/wp-json/site-quiz/v1/questions",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({questionCount:this.questionCount,enabledPatterns:this.enabledPatterns})});if(!t.ok)throw new Error("Failed to load questions");const e=await t.json();this.state.questions=e,this.state.userAnswers=new Array(e.length).fill(null),this.saveState(),this.render()}catch(t){this.renderError(t.message)}}render(){this.state.completed?this.renderResults():this.renderQuestion()}renderQuestion(){const t=this.state.questions[this.state.currentQuestion],e=this.state.userAnswers[this.state.currentQuestion],s=`\n\t\t\t\t<div class="site-quiz__header">\n\t\t\t\t\t<h2>Site Quiz</h2>\n\t\t\t\t\t<div class="site-quiz__progress">\n\t\t\t\t\t\t<span>Question ${this.state.currentQuestion+1} of ${this.state.questions.length}</span>\n\t\t\t\t\t\t<span>•</span>\n\t\t\t\t\t\t<span>Score: ${this.state.score}</span>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class="site-quiz__question">\n\t\t\t\t\t<p class="question__text">${this.escapeHtml(t.question)}</p>\n\t\t\t\t\t<div class="question__options">\n\t\t\t\t\t\t${t.options.map((t,s)=>`\n\t\t\t\t\t\t\t<button \n\t\t\t\t\t\t\t\tclass="question__option ${null!==e&&e===s?"selected":""}" \n\t\t\t\t\t\t\t\tdata-index="${s}"\n\t\t\t\t\t\t\t\t${null!==e?"disabled":""}\n\t\t\t\t\t\t\t>\n\t\t\t\t\t\t\t\t${this.escapeHtml(t)}\n\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t`).join("")}\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class="site-quiz__navigation">\n\t\t\t\t\t${this.state.currentQuestion>0?'\n\t\t\t\t\t\t<button class="quiz-nav__prev">← Previous</button>\n\t\t\t\t\t':""}\n\t\t\t\t\t${null!==e?`\n\t\t\t\t\t\t<button class="quiz-nav__next">\n\t\t\t\t\t\t\t${this.state.currentQuestion<this.state.questions.length-1?"Next →":"View Results"}\n\t\t\t\t\t\t</button>\n\t\t\t\t\t`:""}\n\t\t\t\t</div>\n\t\t\t`;this.container.innerHTML=s,this.attachQuestionListeners()}attachQuestionListeners(){const t=this.container.querySelectorAll(".question__option"),e=this.container.querySelector(".quiz-nav__prev"),s=this.container.querySelector(".quiz-nav__next");t.forEach(t=>{t.addEventListener("click",()=>this.selectAnswer(parseInt(t.dataset.index)))}),e&&e.addEventListener("click",()=>this.previousQuestion()),s&&s.addEventListener("click",()=>this.nextQuestion())}selectAnswer(t){const e=this.state.questions[this.state.currentQuestion],s=t===e.correctAnswer;this.state.userAnswers[this.state.currentQuestion]=t,s&&this.state.score++,this.saveState(),this.showAnswerFeedback(t,e.correctAnswer)}showAnswerFeedback(t,e){this.container.querySelectorAll(".question__option").forEach((s,n)=>{s.disabled=!0,n===e?s.classList.add("correct"):n===t&&t!==e?s.classList.add("incorrect"):s.classList.add("disabled")}),setTimeout(()=>{this.render()},1500)}previousQuestion(){this.state.currentQuestion>0&&(this.state.currentQuestion--,this.render())}nextQuestion(){this.state.currentQuestion<this.state.questions.length-1?(this.state.currentQuestion++,this.render()):this.completeQuiz()}completeQuiz(){this.state.completed=!0,this.saveState(),this.renderResults()}renderResults(){const e=Math.round(this.state.score/this.state.questions.length*100),s=this.getAchievement(e),n=t[s],i=`\n\t\t\t\t<div class="site-quiz__results">\n\t\t\t\t\t<div class="results__badge">${n.emoji}</div>\n\t\t\t\t\t<h2 class="results__title">${n.title}</h2>\n\t\t\t\t\t<p class="results__score">\n\t\t\t\t\t\tYou scored ${this.state.score} out of ${this.state.questions.length} (${e}%)\n\t\t\t\t\t</p>\n\t\t\t\t\t<p class="results__message">${n.message}</p>\n\t\t\t\t\t<div class="results__actions">\n\t\t\t\t\t\t<button class="results__restart">Take Quiz Again</button>\n\t\t\t\t\t\t<button class="results__review">Review Answers</button>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t`;this.container.innerHTML=i,this.attachResultsListeners()}attachResultsListeners(){const t=this.container.querySelector(".results__restart"),e=this.container.querySelector(".results__review");t.addEventListener("click",()=>this.restartQuiz()),e.addEventListener("click",()=>this.reviewAnswers())}async restartQuiz(){this.clearState(),this.state={questions:[],currentQuestion:0,userAnswers:[],score:0,completed:!1},await this.loadQuestions()}reviewAnswers(){this.state.currentQuestion=0,this.state.completed=!1,this.render()}getAchievement(t){return t>=100?"gold":t>=75?"silver":"bronze"}renderError(t){this.container.innerHTML=`\n\t\t\t\t<div class="site-quiz__error">\n\t\t\t\t\t<p>⚠️ ${this.escapeHtml(t)}</p>\n\t\t\t\t\t<button onclick="location.reload()">Retry</button>\n\t\t\t\t</div>\n\t\t\t`}saveState(){const t=`site_quiz_${this.element.dataset.blockId||"default"}`;localStorage.setItem(t,JSON.stringify(this.state))}loadState(){const t=`site_quiz_${this.element.dataset.blockId||"default"}`,e=localStorage.getItem(t);return e?JSON.parse(e):null}clearState(){const t=`site_quiz_${this.element.dataset.blockId||"default"}`;localStorage.removeItem(t)}escapeHtml(t){const e=document.createElement("div");return e.textContent=t,e.innerHTML}}"loading"===document.readyState?document.addEventListener("DOMContentLoaded",e):e()}();
+/******/ (() => { // webpackBootstrap
+/*!*********************!*\
+  !*** ./src/view.js ***!
+  \*********************/
+/**
+ * Site Quiz Frontend Script
+ * Handles quiz functionality with plain JavaScript and DOM manipulation
+ */
+
+document.addEventListener('DOMContentLoaded', function () {
+  const quizBlocks = document.querySelectorAll('.wp-block-telex-block-site-quiz');
+  quizBlocks.forEach(initQuiz);
+});
+function initQuiz(blockElement) {
+  const blockId = blockElement.dataset.blockId;
+  const questionCount = parseInt(blockElement.dataset.questionCount) || 5;
+  const enabledPatterns = JSON.parse(blockElement.dataset.enabledPatterns || '[]');
+  const state = {
+    blockId,
+    questionCount,
+    enabledPatterns,
+    questions: [],
+    currentQuestionIndex: 0,
+    userAnswers: [],
+    score: 0,
+    completed: false,
+    feedbackShown: false
+  };
+
+  // Try to load saved state
+  loadSavedState(state);
+
+  // If no saved incomplete quiz, load new questions
+  if (state.questions.length === 0 || state.completed) {
+    loadQuestions(blockElement, state);
+  } else {
+    hideLoading(blockElement);
+    renderQuiz(blockElement, state);
+  }
+}
+function loadSavedState(state) {
+  const key = `site_quiz_${state.blockId}`;
+  const saved = localStorage.getItem(key);
+  if (saved) {
+    try {
+      const savedState = JSON.parse(saved);
+      if (savedState && !savedState.completed) {
+        Object.assign(state, savedState);
+      }
+    } catch (e) {
+      // Invalid saved state, will load fresh
+    }
+  }
+}
+function saveState(state) {
+  const key = `site_quiz_${state.blockId}`;
+  localStorage.setItem(key, JSON.stringify(state));
+}
+function clearState(state) {
+  const key = `site_quiz_${state.blockId}`;
+  localStorage.removeItem(key);
+}
+async function loadQuestions(blockElement, state) {
+  try {
+    const response = await fetch('/wp-json/site-quiz/v1/questions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        questionCount: state.questionCount,
+        enabledPatterns: state.enabledPatterns
+      })
+    });
+    if (!response.ok) {
+      throw new Error('Failed to load questions');
+    }
+    const questions = await response.json();
+    state.questions = questions;
+    state.userAnswers = new Array(questions.length).fill(null);
+    state.currentQuestionIndex = 0;
+    state.score = 0;
+    state.completed = false;
+    state.feedbackShown = false;
+    hideLoading(blockElement);
+    renderQuiz(blockElement, state);
+    saveState(state);
+  } catch (error) {
+    hideLoading(blockElement);
+    showError(blockElement, error.message, state);
+  }
+}
+function hideLoading(blockElement) {
+  const loading = blockElement.querySelector('.site-quiz__loading');
+  if (loading) {
+    loading.style.display = 'none';
+  }
+}
+function showError(blockElement, message, state) {
+  const container = blockElement.querySelector('.site-quiz__container');
+  container.innerHTML = `
+		<div class="site-quiz__error" style="text-align: center; padding: 2rem;">
+			<p style="color: #ef4444; margin-bottom: 1rem;">${message}</p>
+			<button class="site-quiz__retry" style="padding: 0.75rem 1.5rem; border: none; border-radius: 8px; background: currentColor; color: white; cursor: pointer;">Try Again</button>
+		</div>
+	`;
+  const retryBtn = container.querySelector('.site-quiz__retry');
+  retryBtn.addEventListener('click', () => {
+    container.innerHTML = '<div class="site-quiz__loading"><div class="site-quiz__spinner"></div><p>Loading quiz...</p></div>';
+    loadQuestions(blockElement, state);
+  });
+}
+function renderQuiz(blockElement, state) {
+  const container = blockElement.querySelector('.site-quiz__container');
+  if (state.completed) {
+    renderResults(container, state);
+    return;
+  }
+  const question = state.questions[state.currentQuestionIndex];
+  const userAnswer = state.userAnswers[state.currentQuestionIndex];
+  container.innerHTML = `
+		<div class="site-quiz__header">
+			<h2>Site Quiz</h2>
+			<div class="site-quiz__progress">
+				<span>Question ${state.currentQuestionIndex + 1} / ${state.questions.length}</span>
+			</div>
+		</div>
+		
+		<div class="site-quiz__question">
+			<div class="question__text">${question.question}</div>
+			<div class="question__options">
+				${question.options.map((option, index) => {
+    let className = 'question__option';
+    if (userAnswer !== null) {
+      className += ' disabled';
+      if (index === question.correctAnswer) {
+        className += ' correct';
+      } else if (index === userAnswer) {
+        className += ' incorrect';
+      }
+    }
+    return `<button class="${className}" data-index="${index}">${option}</button>`;
+  }).join('')}
+			</div>
+		</div>
+	`;
+
+  // Add event listeners to options
+  const options = container.querySelectorAll('.question__option');
+  options.forEach(option => {
+    option.addEventListener('click', e => handleAnswerClick(e, blockElement, state));
+  });
+}
+function handleAnswerClick(event, blockElement, state) {
+  const answerIndex = parseInt(event.target.dataset.index);
+
+  // Prevent re-answering
+  if (state.userAnswers[state.currentQuestionIndex] !== null) {
+    return;
+  }
+  const question = state.questions[state.currentQuestionIndex];
+  const isCorrect = answerIndex === question.correctAnswer;
+  state.userAnswers[state.currentQuestionIndex] = answerIndex;
+  state.feedbackShown = true;
+  if (isCorrect) {
+    state.score++;
+  }
+  saveState(state);
+
+  // Re-render to show feedback
+  renderQuiz(blockElement, state);
+
+  // Auto-advance after 1.5 seconds
+  setTimeout(() => {
+    if (state.currentQuestionIndex < state.questions.length - 1) {
+      state.currentQuestionIndex++;
+      state.feedbackShown = false;
+      saveState(state);
+      renderQuiz(blockElement, state);
+    } else {
+      state.completed = true;
+      saveState(state);
+      renderResults(blockElement.querySelector('.site-quiz__container'), state);
+    }
+  }, 1500);
+}
+function renderResults(container, state) {
+  const percentage = Math.round(state.score / state.questions.length * 100);
+  let achievement;
+  if (percentage >= 100) {
+    achievement = {
+      emoji: '🥇',
+      title: 'Gold Master',
+      message: 'Perfect score! You\'re amazing!'
+    };
+  } else if (percentage >= 75) {
+    achievement = {
+      emoji: '🥈',
+      title: 'Silver Expert',
+      message: 'Great job! You know your stuff!'
+    };
+  } else if (percentage >= 50) {
+    achievement = {
+      emoji: '🥉',
+      title: 'Bronze Scholar',
+      message: 'Good effort! Keep learning!'
+    };
+  } else {
+    achievement = {
+      emoji: '📚',
+      title: 'Knowledge Seeker',
+      message: 'Keep practicing!'
+    };
+  }
+  container.innerHTML = `
+		<div class="site-quiz__results">
+			<div class="results__badge">${achievement.emoji}</div>
+			<h2 class="results__title">${achievement.title}</h2>
+			<p class="results__score">
+				You scored <strong>${state.score} / ${state.questions.length}</strong> (${percentage}%)
+			</p>
+			<p class="results__message">${achievement.message}</p>
+			<div class="results__actions">
+				<button class="results__restart">Try Again</button>
+				<button class="results__review">Review Answers</button>
+			</div>
+		</div>
+	`;
+  const restartBtn = container.querySelector('.results__restart');
+  const reviewBtn = container.querySelector('.results__review');
+  restartBtn.addEventListener('click', () => {
+    clearState(state);
+    container.innerHTML = '<div class="site-quiz__loading"><div class="site-quiz__spinner"></div><p>Loading quiz...</p></div>';
+    const blockElement = container.closest('.wp-block-telex-block-site-quiz');
+    initQuiz(blockElement);
+  });
+  reviewBtn.addEventListener('click', () => {
+    state.currentQuestionIndex = 0;
+    state.completed = false;
+    const blockElement = container.closest('.wp-block-telex-block-site-quiz');
+    renderQuiz(blockElement, state);
+  });
+}
+/******/ })()
+;
+//# sourceMappingURL=view.js.map

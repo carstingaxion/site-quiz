@@ -12,12 +12,13 @@
 
 $question_count   = isset( $attributes['questionCount'] ) ? absint( $attributes['questionCount'] ) : 5;
 $enabled_patterns = isset( $attributes['enabledPatterns'] ) ? $attributes['enabledPatterns'] : array();
+$block_id         = uniqid( 'quiz_' );
 
 $wrapper_attributes = get_block_wrapper_attributes(
 	array(
-		'data-question-count'   => $question_count,
+		'data-block-id'         => esc_attr( $block_id ),
+		'data-question-count'   => esc_attr( $question_count ),
 		'data-enabled-patterns' => esc_attr( wp_json_encode( $enabled_patterns ) ),
-		'data-block-id'         => esc_attr( uniqid( 'quiz_' ) ),
 	)
 );
 ?>

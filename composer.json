@@ -1,0 +1,55 @@
+{
+    "name": "carstingaxion/duplicate-as",
+    "description": "Duplicate or Duplicate as different post type, directly from the Editor Sidebar or the Admin List Tables.",
+    "license": "GPL-3.0+",
+    "type": "wordpress-plugin",
+    "keywords": [
+        "wordpress",
+        "wordpress-plugin"
+    ],
+    "authors": [
+        {
+            "name": "Carsten Bach",
+            "email": "mail@carsten-bach.de",
+            "homepage": "https://carsten-bach.de",
+            "role": "Developer"
+        }
+    ],
+    "homepage": "https://websites.fuer.figuren.theater",
+    "support": {
+        "email": "info@figuren.theater",
+        "issues": "https://github.com/carstingaxion/duplicate-as/issues",
+        "source": "https://github.com/carstingaxion/duplicate-as"
+    },
+    "require-dev": {
+        "akirk/extract-wp-hooks": "^1.3",
+        "figuren-theater/code-quality": "*"
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://wpackagist.org"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:akirk/extract-wp-hooks.git"
+        }
+    ],
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "ergebnis/composer-normalize": true,
+            "figuren-theater/altis-core": true,
+            "figuren-theater/ft-core": true,
+            "koodimonni/composer-dropin-installer": true,
+            "phpstan/extension-installer": true
+        },
+        "sort-packages": true
+    },
+    "extra": {
+        "altis": {
+            "install-overrides": []
+        }
+    }
+}
