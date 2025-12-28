@@ -1,0 +1,118 @@
+
+/**
+ * Site Quiz Block Editor Styles
+ */
+
+.site-quiz-editor {
+	border: 2px dashed currentColor;
+	border-radius: 8px;
+	padding: 2rem;
+	opacity: 0.8;
+
+	.site-quiz__preview {
+		text-align: center;
+		max-width: 600px;
+		margin: 0 auto;
+
+		.site-quiz__icon {
+			width: 60px;
+			height: 60px;
+			margin: 0 auto 1rem;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			opacity: 0.6;
+		}
+
+		h3 {
+			margin: 0 0 0.5rem;
+			font-size: 1.5rem;
+			font-weight: 600;
+		}
+
+		.site-quiz__config {
+			margin: 0 0 1.5rem;
+			font-size: 1rem;
+			opacity: 0.7;
+		}
+
+		.site-quiz__warning {
+			padding: 1rem;
+			margin: 1rem 0;
+			background: rgba(251, 146, 60, 0.1);
+			border-left: 4px solid rgb(251, 146, 60);
+			border-radius: 4px;
+			font-size: 0.95rem;
+		}
+
+		.site-quiz__patterns {
+			padding: 1rem;
+			margin: 1rem 0;
+			background: rgba(59, 130, 246, 0.1);
+			border-radius: 8px;
+			text-align: left;
+
+			strong {
+				display: block;
+				margin-bottom: 0.5rem;
+			}
+
+			ul {
+				margin: 0;
+				padding-left: 1.5rem;
+				list-style: disc;
+
+				li {
+					margin: 0.25rem 0;
+					font-size: 0.9rem;
+				}
+			}
+		}
+
+		.site-quiz__help {
+			margin: 1.5rem 0 0;
+			font-size: 0.9rem;
+			opacity: 0.6;
+			line-height: 1.5;
+		}
+	}
+}
+
+/* Inspector Controls Styling */
+.site-quiz-pattern-preview {
+	margin: 1rem 0 0;
+	padding: 0;
+	list-style: none;
+
+	li {
+		padding: 0.75rem;
+		margin-bottom: 0.5rem;
+		background: rgba(0, 0, 0, 0.03);
+		border-radius: 4px;
+
+		strong {
+			display: block;
+			margin-bottom: 0.25rem;
+			font-size: 0.9rem;
+		}
+
+		small {
+			font-size: 0.85rem;
+			opacity: 0.7;
+		}
+	}
+}
+
+.components-panel__body .components-checkbox-control {
+	margin-bottom: 1rem;
+
+	.components-checkbox-control__label {
+		font-weight: 500;
+	}
+
+	.components-base-control__help {
+		margin-top: 0.25rem;
+		font-size: 0.85rem;
+	}
+}
+	

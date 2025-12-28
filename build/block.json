@@ -1,0 +1,79 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "telex/block-site-quiz",
+  "version": "0.1.0",
+  "title": "Site Quiz",
+  "category": "widgets",
+  "icon": "welcome-learn-more",
+  "description": "A dynamic quiz block that generates questions from your site's posts",
+  "example": {
+    "attributes": {
+      "questionCount": 5,
+      "enabledPatterns": [
+        "publication-date",
+        "author",
+        "category"
+      ]
+    }
+  },
+  "attributes": {
+    "questionCount": {
+      "type": "number",
+      "default": 5
+    },
+    "enabledPatterns": {
+      "type": "array",
+      "default": [
+        "publication-date",
+        "author",
+        "tag",
+        "category",
+        "image-count",
+        "word-count",
+        "comment-count"
+      ]
+    }
+  },
+  "supports": {
+    "html": false,
+    "align": true,
+    "spacing": {
+      "padding": true,
+      "margin": true
+    },
+    "color": {
+      "background": true,
+      "text": true
+    },
+    "typography": {
+      "fontSize": true,
+      "lineHeight": true
+    }
+  },
+  "styles": [
+    {
+      "name": "default",
+      "label": "Minimal",
+      "isDefault": true
+    },
+    {
+      "name": "card",
+      "label": "Card"
+    },
+    {
+      "name": "gradient",
+      "label": "Gradient"
+    },
+    {
+      "name": "bold",
+      "label": "Bold"
+    }
+  ],
+  "textdomain": "site-quiz",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css",
+  "viewScript": "file:./view.js",
+  "render": "file:./render.php"
+}
