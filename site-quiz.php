@@ -867,6 +867,448 @@ class Site_Quiz_Comment_Count_Pattern implements Site_Quiz_Pattern_Interface {
 }
 
 // ============================================================================
+// File: includes/class-demo-data-generator.php
+// ============================================================================
+
+/**
+ * Demo Data Generator
+ * 
+ * Generates comprehensive demo content for all quiz patterns.
+ * Enabled by default for local environments.
+ * 
+ * @since 0.1.0
+ */
+class Site_Quiz_Demo_Data_Generator {
+	/**
+	 * Option name for tracking demo data
+	 * 
+	 * @var string
+	 */
+	const OPTION_NAME = 'site_quiz_demo_data';
+
+	/**
+	 * Demo content data
+	 * 
+	 * @var array
+	 */
+	private $demo_data = array(
+		'authors'    => array(),
+		'categories' => array(),
+		'tags'       => array(),
+		'posts'      => array(),
+		'comments'   => array(),
+	);
+
+	/**
+	 * Check if demo data is enabled
+	 * 
+	 * @return bool
+	 */
+	public function is_enabled() {
+		// Enable for local/development environments
+		if ( defined( 'WP_ENVIRONMENT_TYPE' ) ) {
+			return in_array( WP_ENVIRONMENT_TYPE, array( 'local', 'development' ), true );
+		}
+		
+		// Fallback: check if site URL contains localhost or .local
+		$site_url = get_site_url();
+		return ( strpos( $site_url, 'localhost' ) !== false || strpos( $site_url, '.local' ) !== false );
+	}
+
+	/**
+	 * Check if demo data exists
+	 * 
+	 * @return bool
+	 */
+	public function has_demo_data() {
+		$data = get_option( self::OPTION_NAME, array() );
+		return ! empty( $data['posts'] );
+	}
+
+	/**
+	 * Generate all demo data
+	 * 
+	 * @return array|WP_Error Generated data IDs or error
+	 */
+	public function generate_all() {
+		if ( $this->has_demo_data() ) {
+			return new WP_Error( 'demo_exists', __( 'Demo data already exists', 'site-quiz' ) );
+		}
+
+		// Generate authors
+		$this->generate_authors();
+
+		// Generate categories
+		$this->generate_categories();
+
+		// Generate tags
+		$this->generate_tags();
+
+		// Generate posts with varied content
+		$this->generate_posts();
+
+		// Generate comments
+		$this->generate_comments();
+
+		// Save demo data IDs
+		update_option( self::OPTION_NAME, $this->demo_data );
+
+		return $this->demo_data;
+	}
+
+	/**
+	 * Generate demo authors
+	 * 
+	 * @return void
+	 */
+	private function generate_authors() {
+		$authors = array(
+			array( 'login' => 'alice_writer', 'display' => 'Alice Writer', 'email' => 'alice@demo.test' ),
+			array( 'login' => 'bob_blogger', 'display' => 'Bob Blogger', 'email' => 'bob@demo.test' ),
+			array( 'login' => 'carol_author', 'display' => 'Carol Author', 'email' => 'carol@demo.test' ),
+			array( 'login' => 'dave_editor', 'display' => 'Dave Editor', 'email' => 'dave@demo.test' ),
+		);
+
+		foreach ( $authors as $author ) {
+			$user_id = wp_create_user( $author['login'], wp_generate_password(), $author['email'] );
+			
+			if ( ! is_wp_error( $user_id ) ) {
+				wp_update_user(
+					array(
+						'ID'           => $user_id,
+						'display_name' => $author['display'],
+						'role'         => 'author',
+					)
+				);
+				$this->demo_data['authors'][] = $user_id;
+			}
+		}
+	}
+
+	/**
+	 * Generate demo categories
+	 * 
+	 * @return void
+	 */
+	private function generate_categories() {
+		$categories = array(
+			'Technology',
+			'Travel',
+			'Food & Cooking',
+			'Health & Fitness',
+			'Business',
+			'Entertainment',
+		);
+
+		foreach ( $categories as $category ) {
+			$term = wp_insert_term( $category, 'category' );
+			
+			if ( ! is_wp_error( $term ) ) {
+				$this->demo_data['categories'][] = $term['term_id'];
+			}
+		}
+	}
+
+	/**
+	 * Generate demo tags
+	 * 
+	 * @return void
+	 */
+	private function generate_tags() {
+		$tags = array(
+			'innovation', 'tutorial', 'guide', 'tips', 'review',
+			'news', 'analysis', 'opinion', 'how-to', 'beginner',
+			'advanced', 'trending', 'featured', 'popular', 'research',
+		);
+
+		foreach ( $tags as $tag ) {
+			$term = wp_insert_term( $tag, 'post_tag' );
+			
+			if ( ! is_wp_error( $term ) ) {
+				$this->demo_data['tags'][] = $term['term_id'];
+			}
+		}
+	}
+
+	/**
+	 * Generate demo posts
+	 * 
+	 * @return void
+	 */
+	private function generate_posts() {
+		$post_templates = array(
+			array(
+				'title'      => 'Getting Started with WordPress Blocks',
+				'word_count' => 450,
+				'images'     => 2,
+				'months_ago' => 1,
+			),
+			array(
+				'title'      => 'Top 10 Travel Destinations for 2024',
+				'word_count' => 800,
+				'images'     => 5,
+				'months_ago' => 2,
+			),
+			array(
+				'title'      => 'Healthy Breakfast Recipes',
+				'word_count' => 650,
+				'images'     => 3,
+				'months_ago' => 3,
+			),
+			array(
+				'title'      => 'Understanding Artificial Intelligence',
+				'word_count' => 1200,
+				'images'     => 1,
+				'months_ago' => 4,
+			),
+			array(
+				'title'      => 'Fitness Tips for Busy Professionals',
+				'word_count' => 550,
+				'images'     => 4,
+				'months_ago' => 5,
+			),
+			array(
+				'title'      => 'The Future of Remote Work',
+				'word_count' => 950,
+				'images'     => 2,
+				'months_ago' => 6,
+			),
+			array(
+				'title'      => 'Best Practices for Web Design',
+				'word_count' => 720,
+				'images'     => 6,
+				'months_ago' => 7,
+			),
+			array(
+				'title'      => 'Exploring National Parks',
+				'word_count' => 880,
+				'images'     => 8,
+				'months_ago' => 8,
+			),
+			array(
+				'title'      => 'Cybersecurity Essentials',
+				'word_count' => 1100,
+				'images'     => 1,
+				'months_ago' => 9,
+			),
+			array(
+				'title'      => 'Quick Dinner Ideas',
+				'word_count' => 380,
+				'images'     => 7,
+				'months_ago' => 10,
+			),
+			array(
+				'title'      => 'Introduction to Photography',
+				'word_count' => 620,
+				'images'     => 10,
+				'months_ago' => 11,
+			),
+			array(
+				'title'      => 'Building a Personal Brand',
+				'word_count' => 850,
+				'images'     => 3,
+				'months_ago' => 12,
+			),
+		);
+
+		foreach ( $post_templates as $index => $template ) {
+			// Rotate through authors
+			$author_id = ! empty( $this->demo_data['authors'] ) 
+				? $this->demo_data['authors'][ $index % count( $this->demo_data['authors'] ) ]
+				: get_current_user_id();
+
+			// Generate content with specified word count
+			$content = $this->generate_content( $template['word_count'], $template['images'] );
+
+			// Calculate post date
+			$post_date = date( 'Y-m-d H:i:s', strtotime( "-{$template['months_ago']} months" ) );
+
+			// Create post
+			$post_id = wp_insert_post(
+				array(
+					'post_title'   => $template['title'],
+					'post_content' => $content,
+					'post_status'  => 'publish',
+					'post_author'  => $author_id,
+					'post_date'    => $post_date,
+					'post_type'    => 'post',
+				)
+			);
+
+			if ( ! is_wp_error( $post_id ) ) {
+				// Assign categories (1-2 per post)
+				if ( ! empty( $this->demo_data['categories'] ) ) {
+					$cat_count = rand( 1, 2 );
+					$categories = array_rand( array_flip( $this->demo_data['categories'] ), $cat_count );
+					wp_set_post_categories( $post_id, (array) $categories );
+				}
+
+				// Assign tags (3-5 per post)
+				if ( ! empty( $this->demo_data['tags'] ) ) {
+					$tag_count = rand( 3, 5 );
+					$tags = array_rand( array_flip( $this->demo_data['tags'] ), $tag_count );
+					wp_set_post_tags( $post_id, $tags, false );
+				}
+
+				$this->demo_data['posts'][] = $post_id;
+			}
+		}
+	}
+
+	/**
+	 * Generate post content with specified word count and images
+	 * 
+	 * @param int $word_count Target word count
+	 * @param int $image_count Number of images to include
+	 * @return string Generated content
+	 */
+	private function generate_content( $word_count, $image_count ) {
+		$paragraphs = array(
+			'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+			'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+			'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+			'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+			'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.',
+			'Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores.',
+			'Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.',
+			'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti.',
+		);
+
+		$content = '';
+		$current_words = 0;
+		$images_added = 0;
+
+		while ( $current_words < $word_count ) {
+			$paragraph = $paragraphs[ array_rand( $paragraphs ) ];
+			$content .= "<p>$paragraph</p>\n\n";
+			$current_words += str_word_count( $paragraph );
+
+			// Add images at intervals
+			if ( $images_added < $image_count && $current_words > ( $word_count / $image_count ) * ( $images_added + 1 ) ) {
+				$content .= '<img src="https://via.placeholder.com/800x400" alt="Demo image" />' . "\n\n";
+				$images_added++;
+			}
+		}
+
+		// Add any remaining images at the end
+		while ( $images_added < $image_count ) {
+			$content .= '<img src="https://via.placeholder.com/800x400" alt="Demo image" />' . "\n\n";
+			$images_added++;
+		}
+
+		return $content;
+	}
+
+	/**
+	 * Generate demo comments
+	 * 
+	 * @return void
+	 */
+	private function generate_comments() {
+		if ( empty( $this->demo_data['posts'] ) ) {
+			return;
+		}
+
+		$comment_texts = array(
+			'Great article! Very informative.',
+			'Thanks for sharing this helpful information.',
+			'I learned a lot from this post.',
+			'Excellent content, keep it up!',
+			'This is exactly what I was looking for.',
+			'Very well written and explained.',
+			'Looking forward to more posts like this.',
+			'Interesting perspective on the topic.',
+		);
+
+		$authors = array(
+			array( 'name' => 'John Reader', 'email' => 'john@demo.test' ),
+			array( 'name' => 'Jane Commenter', 'email' => 'jane@demo.test' ),
+			array( 'name' => 'Mike Visitor', 'email' => 'mike@demo.test' ),
+			array( 'name' => 'Sarah User', 'email' => 'sarah@demo.test' ),
+		);
+
+		// Add varying number of comments to posts
+		foreach ( $this->demo_data['posts'] as $index => $post_id ) {
+			// Vary comment count: 0-10 comments per post
+			$comment_count = ( $index < 4 ) ? rand( 5, 10 ) : rand( 0, 4 );
+
+			for ( $i = 0; $i < $comment_count; $i++ ) {
+				$author = $authors[ array_rand( $authors ) ];
+				
+				$comment_id = wp_insert_comment(
+					array(
+						'comment_post_ID'      => $post_id,
+						'comment_author'       => $author['name'],
+						'comment_author_email' => $author['email'],
+						'comment_content'      => $comment_texts[ array_rand( $comment_texts ) ],
+						'comment_approved'     => 1,
+						'comment_date'         => date( 'Y-m-d H:i:s', strtotime( "-" . rand( 1, 30 ) . " days" ) ),
+					)
+				);
+
+				if ( $comment_id ) {
+					$this->demo_data['comments'][] = $comment_id;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Delete all demo data
+	 * 
+	 * @return bool True on success
+	 */
+	public function delete_all() {
+		$data = get_option( self::OPTION_NAME, array() );
+
+		if ( empty( $data ) ) {
+			return false;
+		}
+
+		// Delete comments
+		if ( ! empty( $data['comments'] ) ) {
+			foreach ( $data['comments'] as $comment_id ) {
+				wp_delete_comment( $comment_id, true );
+			}
+		}
+
+		// Delete posts
+		if ( ! empty( $data['posts'] ) ) {
+			foreach ( $data['posts'] as $post_id ) {
+				wp_delete_post( $post_id, true );
+			}
+		}
+
+		// Delete tags
+		if ( ! empty( $data['tags'] ) ) {
+			foreach ( $data['tags'] as $tag_id ) {
+				wp_delete_term( $tag_id, 'post_tag' );
+			}
+		}
+
+		// Delete categories
+		if ( ! empty( $data['categories'] ) ) {
+			foreach ( $data['categories'] as $cat_id ) {
+				wp_delete_term( $cat_id, 'category' );
+			}
+		}
+
+		// Delete authors
+		if ( ! empty( $data['authors'] ) ) {
+			foreach ( $data['authors'] as $author_id ) {
+				require_once ABSPATH . 'wp-admin/includes/user.php';
+				wp_delete_user( $author_id );
+			}
+		}
+
+		// Remove option
+		delete_option( self::OPTION_NAME );
+
+		return true;
+	}
+}
+
+// ============================================================================
 // File: site-quiz.php (Main Plugin Class)
 // ============================================================================
 
@@ -891,6 +1333,13 @@ final class Site_Quiz_Plugin {
 	 * @var Site_Quiz_Pattern_Registry|null
 	 */
 	private $pattern_registry = null;
+
+	/**
+	 * Demo data generator
+	 * 
+	 * @var Site_Quiz_Demo_Data_Generator|null
+	 */
+	private $demo_generator = null;
 
 	/**
 	 * Get plugin instance
@@ -938,6 +1387,8 @@ final class Site_Quiz_Plugin {
 		add_action( 'init', array( $this, 'register_block' ) );
 		add_action( 'init', array( $this, 'register_patterns' ) );
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
+		add_action( 'admin_notices', array( $this, 'show_demo_notice' ) );
+		add_action( 'admin_init', array( $this, 'handle_demo_actions' ) );
 	}
 
 	/**
@@ -977,6 +1428,14 @@ final class Site_Quiz_Plugin {
 		 * @param Site_Quiz_Pattern_Registry $registry Pattern registry instance
 		 */
 		do_action( 'site_quiz_register_patterns', $this->pattern_registry );
+
+		// Initialize demo data generator
+		$this->demo_generator = new Site_Quiz_Demo_Data_Generator();
+
+		// Auto-generate demo data on first activation in local environments
+		if ( $this->demo_generator->is_enabled() && ! $this->demo_generator->has_demo_data() ) {
+			$this->demo_generator->generate_all();
+		}
 	}
 
 	/**
@@ -1068,12 +1527,88 @@ final class Site_Quiz_Plugin {
 	}
 
 	/**
+	 * Show demo data admin notice
+	 * 
+	 * @return void
+	 */
+	public function show_demo_notice() {
+		if ( ! $this->demo_generator || ! $this->demo_generator->is_enabled() ) {
+			return;
+		}
+
+		if ( isset( $_GET['site-quiz-demo'] ) ) {
+			$action = sanitize_text_field( $_GET['site-quiz-demo'] );
+			
+			if ( 'generated' === $action ) {
+				echo '<div class="notice notice-success is-dismissible"><p>';
+				echo esc_html__( 'Demo content generated successfully! You can now test all quiz patterns.', 'site-quiz' );
+				echo '</p></div>';
+			} elseif ( 'deleted' === $action ) {
+				echo '<div class="notice notice-success is-dismissible"><p>';
+				echo esc_html__( 'Demo content deleted successfully.', 'site-quiz' );
+				echo '</p></div>';
+			}
+			return;
+		}
+
+		if ( $this->demo_generator->has_demo_data() ) {
+			$delete_url = wp_nonce_url(
+				add_query_arg( 'site-quiz-action', 'delete-demo' ),
+				'site-quiz-demo',
+				'site-quiz-nonce'
+			);
+
+			echo '<div class="notice notice-info"><p>';
+			echo esc_html__( 'Site Quiz: Demo content is active.', 'site-quiz' );
+			echo ' <a href="' . esc_url( $delete_url ) . '">';
+			echo esc_html__( 'Delete Demo Content', 'site-quiz' );
+			echo '</a></p></div>';
+		}
+	}
+
+	/**
+	 * Handle demo data actions
+	 * 
+	 * @return void
+	 */
+	public function handle_demo_actions() {
+		if ( ! isset( $_GET['site-quiz-action'] ) || ! isset( $_GET['site-quiz-nonce'] ) ) {
+			return;
+		}
+
+		if ( ! wp_verify_nonce( $_GET['site-quiz-nonce'], 'site-quiz-demo' ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$action = sanitize_text_field( $_GET['site-quiz-action'] );
+
+		if ( 'delete-demo' === $action && $this->demo_generator ) {
+			$this->demo_generator->delete_all();
+			wp_safe_redirect( add_query_arg( 'site-quiz-demo', 'deleted', admin_url() ) );
+			exit;
+		}
+	}
+
+	/**
 	 * Get pattern registry
 	 * 
 	 * @return Site_Quiz_Pattern_Registry
 	 */
 	public function get_pattern_registry() {
 		return $this->pattern_registry;
+	}
+
+	/**
+	 * Get demo data generator
+	 * 
+	 * @return Site_Quiz_Demo_Data_Generator
+	 */
+	public function get_demo_generator() {
+		return $this->demo_generator;
 	}
 
 	/**
